@@ -74,11 +74,15 @@ def fbvid():
 	else:
 		r = requests.get(url)
 		f = re.search(r'\"(http[s]\:\/\/video.*?\.mp4\?.*?)\"',r.text)
-		urlvid = f.group(1).replace(";","&")
-		config2["url"] = url
-		config2["urlvid"] = urlvid
-		config["status"] = sukses
-		config["result"] = json.loads("".join(json.dumps(config2)))
+		if f:
+			urlvid = f.group(1).replace(";","&")
+			config2["url"] = url
+			config2["urlvid"] = urlvid
+			config["status"] = sukses
+			config["result"] = json.loads("".join(json.dumps(config2)))
+		else:
+			config["status"] = gagal
+			config["pesan"] = "Sepertinya Video tidak ditemukan"
 	return "".join(json.dumps(config))
 # IP TRACK
 @app.route("/api/track")
@@ -135,6 +139,29 @@ def track():
 		js = json.loads(json.dumps(config2))
 		config["status"] = sukses
 		config["result"] = js
+	return "".join(json.dumps(config))
+
+# INSTAGRAM VIDEO DOWNLOADER
+@app.route("/api/igdown")
+def igdown():
+	config = {}
+	config2 = {}
+	url = request.args.get("url")
+	if not url:
+		config["status"] = error
+		config["pesan"] = "Parameter URL tidak ditemukan"
+	else:
+		r = requests.get(url).text
+		b = bs(r, "html.parser")
+		for f in b.findAll("meta"):
+			if f.get("property") == "og:video:secure_url":
+				config2["url"] = url
+				config2["urlvid"] = f.get("content")
+				config["status"] = sukses
+				config["result"] = json.loads("".join(json.dumps(config2)))
+#			else:
+#				config["status"] = gagal
+#				config["pesan"] = "Sepertinya video tidak ditemukan"
 	return "".join(json.dumps(config))
 
 # JIKA PAGE ERROR MAKA:
