@@ -72,17 +72,21 @@ def fbvid():
 		config["status"] = error
 		config["pesan"] = "Parameter URL tidak ditemukan"
 	else:
-		r = requests.get(url)
-		f = re.search(r'\"(http[s]\:\/\/video.*?\.mp4\?.*?)\"',r.text)
-		if f:
-			urlvid = f.group(1).replace(";","&")
-			config2["url"] = url
-			config2["urlvid"] = urlvid
-			config["status"] = sukses
-			config["result"] = json.loads("".join(json.dumps(config2)))
-		else:
-			config["status"] = gagal
-			config["pesan"] = "Sepertinya Video tidak ditemukan"
+		try:
+			r = requests.get(url)
+			f = re.search(r'\"(http[s]\:\/\/video.*?\.mp4\?.*?)\"',r.text)
+			if f:
+				urlvid = f.group(1).replace(";","&")
+				config2["url"] = url
+				config2["urlvid"] = urlvid
+				config["status"] = sukses
+				config["result"] = json.loads("".join(json.dumps(config2)))
+			else:
+				config["status"] = gagal
+				config["pesan"] = "Sepertinya Video tidak ditemukan"
+		except requests.exceptions.MissingSchema:
+			config["status"] = error
+			config["pesan"] = "Silahkan Masukna URL dengan benar"
 	return "".join(json.dumps(config))
 # IP TRACK
 @app.route("/api/track")
@@ -161,18 +165,27 @@ def igdown():
 		config["status"] = error
 		config["pesan"] = "Parameter URL tidak ditemukan"
 	else:
-		r = requests.get(url).text
-		b = bs(r, "html.parser")
-		for f in b.findAll("meta"):
-			if f.get("property") == "og:video:secure_url":
-				config2["url"] = url
-				config2["urlvid"] = f.get("content")
-				config["status"] = sukses
-				config["result"] = json.loads("".join(json.dumps(config2)))
-#			else:
-#				config["status"] = gagal
-#				config["pesan"] = "Sepertinya video tidak ditemukan"
-	return "".join(json.dumps(config))
+		try:
+			r = requests.get(url)
+#		if r.status_code == 200:
+			b = bs(r.text, "html.parser")
+			for f in b.findAll("meta"):
+				if f.get("property") == "og:video:secure_url":
+					config2["url"] = url
+					config2["urlvid"] = f.get("content")
+					config["status"] = sukses
+					config["result"] = config2
+					config["pesan"] = "Video Di Temukan"
+					del config["pesan"]
+					break
+				else:
+					config["status"] = gagal
+					config["pesan"] = "Sepertinya video tidak ditemukan"
+		except requests.exceptions.MissingSchema:
+			config["status"] = error
+			config["pesan"] = "Silahkan Masukan URL dengan benar"
+	j = json.dumps(config)
+	return j
 
 # JIKA PAGE ERROR MAKA:
 @app.errorhandler(404)
@@ -183,6 +196,11 @@ def not_found(e):
 @app.route("/tools")
 def tools():
 	return render_template("tools.html")
+
+# JIKA KLIK ABOUT MAKA:
+@app.route("/about")
+def about():
+	return render_template("about.html")
 
 # INDEX AWAL
 @app.route("/")
