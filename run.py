@@ -202,6 +202,11 @@ def tools():
 def about():
 	return render_template("about.html")
 
+# JIKA KLIK TUTORIAL MAKA:
+@app.route("/tutorial")
+def tutorial():
+	return render_template("tutor.html")
+
 # INDEX AWAL
 @app.route("/")
 def index():
