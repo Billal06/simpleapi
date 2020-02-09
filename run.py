@@ -94,7 +94,11 @@ def track():
 	config = {}
 	config2 = {}
 	config3 = {}
-	ip = request.args.get("ip")
+	target = request.args.get("target")
+	try:
+		ip = socket.gethostbyname(target)
+	except:
+		ip = target
 	key = ["2388107e74e7fe5424554967771b568b","7a1afbf9b63efdf5bdb30a08a736673c229b3ea738e667e0d259c135"]
 	urls = ["http://api.ipstack.com/","http://ip-api.com/json/","http://free.ipwhois.io/json/","https://api.ipdata.co/"]
 	r = requests.get(urls[0]+ip+"?access_key="+key[0]).text
