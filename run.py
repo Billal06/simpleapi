@@ -1,6 +1,6 @@
 from flask import *
 from bs4 import BeautifulSoup as bs
-import requests, os, re, json
+import requests, os, re, json, random
 app = Flask(__name__)
 
 # Var Status
@@ -175,6 +175,34 @@ def igdown():
 			config["pesan"] = "Silahkan Masukan URL dengan benar"
 	j = json.dumps(config)
 	return j
+
+# User Agent Fake
+@app.route("/api/ua")
+def ua():
+	config = {}
+	config2 = {}
+	data = []
+	browser = request.args.get("browser")
+	if browser:
+		if browser == "chrome":
+			url = "https://developers.whatismybrowser.com/useragents/explore/software_name/chrome"
+		elif browser == "andro":
+			url = "https://developers.whatismybrowser.com/useragents/explore/software_name/android-browser/"
+		elif browser == "edge":
+			url = "https://developers.whatismybrowser.com/useragents/explore/software_name/edge/"
+		elif browser == "fbapp":
+			url = "https://developers.whatismybrowser.com/useragents/explore/software_name/facebook-app/"
+		r = requests.get(url)
+		b = bs(r.text, "html.parser")
+		for f in b.findAll("td",{"class":"useragent"}):
+			data.append(f.text)
+		config2["ua"] = random.choice(data)
+		config["status"] = sukses
+		config["result"] = json.loads(json.dumps(config2))
+	else:
+		config["status"] = error
+		config["pesan"] = "Parameter Browser tidak ditemukan"
+	return "".join(json.dumps(config))
 
 # JIKA PAGE ERROR MAKA:
 @app.errorhandler(404)
