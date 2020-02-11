@@ -40,7 +40,7 @@ def ytmp3():
 		config["status"] = error
 		config["pesan"] = "Parameter URL tidak di temukan"
 	else:
-		if "warch?v=" in url:
+		if "watch?v=" in url:
 			id = re.findall('v=(.*)$',url)
 		elif "youtube.com" in url:
 			id = re.findall('.com/(.*)$',url)
@@ -182,16 +182,38 @@ def ua():
 	config = {}
 	config2 = {}
 	data = []
+	basic = "https://developers.whatismybrowser.com/useragents/explore/software_name/"
 	browser = request.args.get("browser")
 	if browser:
 		if browser == "chrome":
-			url = "https://developers.whatismybrowser.com/useragents/explore/software_name/chrome"
+			url = basic+"chrome"
 		elif browser == "andro":
-			url = "https://developers.whatismybrowser.com/useragents/explore/software_name/android-browser/"
+			url = basic+"android-browser/"
 		elif browser == "edge":
-			url = "https://developers.whatismybrowser.com/useragents/explore/software_name/edge/"
+			url = basic+"edge/"
 		elif browser == "fbapp":
-			url = "https://developers.whatismybrowser.com/useragents/explore/software_name/facebook-app/"
+			url = basic+"facebook-app/"
+		# Update V1.9
+		elif browser == "firefox":
+			url = basic+"firefox"
+		elif browser == "ig":
+			url = basic+"instagram"
+		elif browser == "opera":
+			url = basic+"opera"
+		elif browser == "opera-mini":
+			url = basic+"opera-mini"
+		elif browser == "safari":
+			url = basic+"safari"
+		elif browser == "uc":
+			url = basic+"uc-browser"
+		elif browser == "webkit":
+			url = basic+"webkit-based-browser"
+		elif browser == "yandex":
+			url = basic+"yandex-browser"
+		else:
+			config["status"] = error
+			config["pesan"] = "Browser '%s' tidak ditemukan"%(browser)
+			return "".join(json.dumps(config))
 		r = requests.get(url)
 		b = bs(r.text, "html.parser")
 		for f in b.findAll("td",{"class":"useragent"}):
@@ -212,6 +234,11 @@ def not_found(e):
 # JIKA KLIK TOOLS MAKA:
 @app.route("/tools")
 def tools():
+	return render_template("tools.html")
+
+# JIKA DI URL TERDAPAT /api TANPA URL /api/name MAKA:
+@app.route("/api")
+def api():
 	return render_template("tools.html")
 
 # JIKA KLIK ABOUT MAKA:
